@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - ExamPortal</title>
+    <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <style>
+        body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; }
+        nav a { margin-right: 1rem; }
+        table { border-collapse: collapse; }
+        td, th { border: 1px solid #ccc; padding: 4px 10px; text-align: left; }
+        .error { color: #b00020; }
+    </style>
+</head>
+<body>
+    <nav>
+        @Html.ActionLink("Home", "Index", "Home")
+        @Html.ActionLink("Candidates", "Index", "Candidates")
+        @Html.ActionLink("Import roster", "Index", "Import")
+        @if (Request.IsAuthenticated)
+        {
+            <span>Signed in as @User.Identity.Name</span>
+            @Html.ActionLink("Log out", "Logout", "Account")
+        }
+        else
+        {
+            @Html.ActionLink("Log in", "Login", "Account")
+        }
+    </nav>
+    <hr />
+    @RenderBody()
+</body>
+</html>

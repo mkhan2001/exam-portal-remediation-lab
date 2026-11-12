@@ -1,0 +1,15 @@
+@{
+    ViewBag.Title = "Import roster";
+}
+<h1>Import roster</h1>
+<p>Upload an XML roster from a test center.</p>
+
+@if (ViewBag.Message != null)
+{
+    <p>@Html.Raw(ViewBag.Message)</p>
+}
+
+<form method="post" action="@Url.Action("Upload")" enctype="multipart/form-data">
+    <p><input type="file" name="file" /></p>
+    <p><button type="submit">Upload</button></p>
+</form>

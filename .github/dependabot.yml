@@ -1,0 +1,17 @@
+# Software composition analysis: Dependabot raises alerts and pull requests for
+# dependencies with known vulnerabilities, including the legacy packages.config.
+# Also turn on "Dependabot alerts" under Settings > Advanced Security.
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/core/ExamPortal.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "nuget"
+    directory: "/legacy/ExamPortal.Legacy.Web"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

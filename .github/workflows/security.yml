@@ -1,0 +1,80 @@
+# Security gates: SAST, SCA, and DAST.
+#
+# All three jobs start in report-only mode (continue-on-error: true), because the sample
+# apps are full of planted vulnerabilities and would block every pull request.
+# To turn a job into a real gate: remove its continue-on-error line and add the job as a
+# required status check in branch protection. See docs/PRACTICE.md, Part 7.
+name: Security gates
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sast:
+    name: SAST - CodeQL
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      # Results appear under Security > Code scanning. Code scanning is free for public
+      # repositories. Private repositories need GitHub Code Security enabled.
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          build-mode: none
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+
+  sca:
+    name: SCA - vulnerable packages
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet restore core/ExamPortal.Api.sln
+      - name: Check the .NET 8 app for packages with known vulnerabilities
+        run: |
+          dotnet list core/ExamPortal.Api.sln package --vulnerable --include-transitive 2>&1 | tee sca-report.txt
+          if grep -q "has the following vulnerable packages" sca-report.txt; then
+            echo "::error::Packages with known vulnerabilities were found. See the list above."
+            exit 1
+          fi
+      # The legacy app uses packages.config, which this command cannot read.
+      # Dependabot covers it: see .github/dependabot.yml.
+
+  dast:
+    name: DAST - ZAP baseline scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Start the .NET 8 API
+        run: |
+          dotnet build core/ExamPortal.Api/ExamPortal.Api.csproj --configuration Release
+          nohup dotnet run --project core/ExamPortal.Api --configuration Release --no-build -- --urls http://localhost:5080 > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://localhost:5080/; then echo "API is up"; exit 0; fi
+            sleep 2
+          done
+          cat api.log
+          exit 1
+      - name: Run the ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "http://localhost:5080"
+          allow_issue_writing: false
+          fail_action: true

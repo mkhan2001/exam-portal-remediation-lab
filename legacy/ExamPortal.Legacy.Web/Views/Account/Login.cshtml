@@ -1,0 +1,17 @@
+@model LoginModel
+@{
+    ViewBag.Title = "Log in";
+}
+<h1>Log in</h1>
+<div class="error">@Html.ValidationSummary()</div>
+<form method="post" action="@Url.Action("Login", "Account", new { returnUrl = ViewBag.ReturnUrl })">
+    <p>
+        <label>Username</label><br />
+        @Html.TextBoxFor(m => m.Username)
+    </p>
+    <p>
+        <label>Password</label><br />
+        @Html.PasswordFor(m => m.Password)
+    </p>
+    <p><button type="submit">Log in</button></p>
+</form>

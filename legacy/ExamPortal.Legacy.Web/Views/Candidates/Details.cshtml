@@ -1,0 +1,17 @@
+@model Candidate
+@{
+    ViewBag.Title = "Candidate details";
+}
+<h1>@Model.FirstName @Model.LastName</h1>
+<p>Email: @Model.Email</p>
+<p>Report access code: @ViewBag.ReportAccessCode</p>
+
+<h2>Notes</h2>
+<div>@Html.Raw(Model.Notes)</div>
+
+<form method="post" action="@Url.Action("UpdateNotes", new { id = Model.Id })">
+    <p><textarea name="notes" rows="5" cols="60">@Model.Notes</textarea></p>
+    <p><button type="submit">Save notes</button></p>
+</form>
+
+<p>@Html.ActionLink("Back to list", "Index")</p>

@@ -1,0 +1,31 @@
+@model System.Collections.Generic.List<Candidate>
+@{
+    ViewBag.Title = "Candidates";
+}
+<h1>Candidates</h1>
+
+<form method="get" action="@Url.Action("Index")">
+    <input type="text" name="search" placeholder="Last name" />
+    <input type="text" name="email" placeholder="Exact email" />
+    <button type="submit">Search</button>
+</form>
+
+@if (!string.IsNullOrEmpty(ViewBag.Search))
+{
+    <p>Results for: @Html.Raw(ViewBag.Search)</p>
+}
+
+<table>
+    <tr><th>Name</th><th>Email</th><th></th></tr>
+    @foreach (var candidate in Model)
+    {
+        <tr>
+            <td>@candidate.LastName, @candidate.FirstName</td>
+            <td>@candidate.Email</td>
+            <td>
+                @Html.ActionLink("Details", "Details", new { id = candidate.Id })
+                @Html.ActionLink("Delete", "Delete", new { id = candidate.Id })
+            </td>
+        </tr>
+    }
+</table>

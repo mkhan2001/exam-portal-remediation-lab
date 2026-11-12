@@ -1,0 +1,4 @@
+ExamPortal sample score report
+Candidate: Maria Alvarez
+Exam: BAR-CA-2026
+Result: Pass

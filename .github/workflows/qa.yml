@@ -1,0 +1,38 @@
+# Automated QA: builds both applications and runs their unit tests.
+# Make both jobs required checks in branch protection.
+name: Automated QA
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  core:
+    name: QA - .NET 8 API
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet restore core/ExamPortal.Api.sln
+      - run: dotnet build core/ExamPortal.Api.sln --no-restore --configuration Release
+      - run: dotnet test core/ExamPortal.Api.sln --no-build --configuration Release
+
+  legacy:
+    name: QA - .NET Framework 4.8 app
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - uses: NuGet/setup-nuget@v2
+      - name: Restore NuGet packages
+        run: nuget restore legacy\ExamPortal.Legacy.sln
+      - name: Build
+        run: msbuild legacy\ExamPortal.Legacy.sln /p:Configuration=Release /m
+      - uses: darenm/Setup-VSTest@v1
+      - name: Run tests
+        run: vstest.console.exe legacy\ExamPortal.Legacy.Tests\bin\Release\net48\ExamPortal.Legacy.Tests.dll
+        # If the Setup-VSTest action is unavailable, this line does the same job:
+        # run: dotnet test legacy\ExamPortal.Legacy.Tests\bin\Release\net48\ExamPortal.Legacy.Tests.dll
